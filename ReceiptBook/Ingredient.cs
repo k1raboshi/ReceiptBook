@@ -10,6 +10,7 @@ namespace ReceiptBook
 	{
 		public int IngredientID {  get; set; }
 		public string IngredientName { get; set; }
+		public List<Receipt> Receipts { get; } = new List<Receipt>();
 		public Ingredient(int ingredientID, string ingredientName)
 		{
 			IngredientID = ingredientID;

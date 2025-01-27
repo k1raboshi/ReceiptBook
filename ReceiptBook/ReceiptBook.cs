@@ -40,7 +40,5 @@ namespace ReceiptBook
 		{
 			_receipts.RemoveAt(id);
 		}
-
-		
 	}
 }
