@@ -11,16 +11,16 @@ namespace ReceiptBook
 		public int ReceiptId { get; set; }
 		public string ReceiptName { get; set; }
 		public string ReceiptDescription { get; set; }
-		public string ReceiptInstruction { get; set; }
+		public string ReceiptInstructions { get; set; }
 		private List<Ingredient> _ingredients = new List<Ingredient>();
 
 		public Receipt() { }
-		public Receipt(int id, string receiptName, string receiptDescription, string receipInstruction)
+		public Receipt(int id, string receiptName, string receiptDescription, string receipInstructions)
 		{
 			ReceiptId = id;
 			ReceiptName = receiptName;
 			ReceiptDescription = receiptDescription;
-			ReceiptInstruction = receipInstruction;
+			ReceiptInstructions = receipInstructions;
 		}
 
 		public Ingredient GetIngredient(int id)
