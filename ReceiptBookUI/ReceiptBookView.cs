@@ -3,12 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ReceiptBook;
 
 namespace ReceiptBookUI
 {
 	public class ReceiptBookView
 	{
 		private ReceiptBookView() { }
+
+		private ReceiptBook.ReceiptBook receiptBook = new ReceiptBook.ReceiptBook();
 
 		private static ReceiptBookView? s_instance;
 
@@ -27,6 +30,7 @@ namespace ReceiptBookUI
 
 		public void ShowMenu()
 		{
+			
 			while (true)
 			{
 				Console.WriteLine("Hello! Choose option:");
@@ -40,12 +44,16 @@ namespace ReceiptBookUI
 				switch (choice)
 				{
 					case "1":
+						receiptBook.PrintAllReceipts();
 						break;
 					case "2":
+						AddNewRecipy();
 						break;
 					case "3":
+						//EditRecipy()
 						break;
 					case "4":
+						//DeleteRecipy()
 						break;
 					case "5":
 						Console.WriteLine("Exiting");
@@ -54,6 +62,17 @@ namespace ReceiptBookUI
 						break;
 				}
 			}
+		}
+
+		public void AddNewRecipy()
+		{
+			Console.Write("Recipy name: ");
+			string receiptName = Console.ReadLine();
+			Console.Write("Description: ");
+			string receiptDescription = Console.ReadLine();
+			Console.Write("Instructions: ");
+			string receiptInstructions = Console.ReadLine();
+			receiptBook.AddReceipt(new Receipt(0, receiptName, receiptDescription, receiptInstructions));
 		}
 	}
 }

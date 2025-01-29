@@ -40,5 +40,13 @@ namespace ReceiptBook
 		{
 			_receipts.RemoveAt(id);
 		}
+
+		public void PrintAllReceipts()
+		{
+			foreach(Receipt receipt in _receipts)
+			{
+				Console.WriteLine($"{receipt.ReceiptName}: {receipt.ReceiptDescription}; {receipt.ReceiptDescription}");
+			}
+		}
 	}
 }
