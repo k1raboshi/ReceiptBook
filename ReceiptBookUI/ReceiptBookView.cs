@@ -45,6 +45,7 @@ namespace ReceiptBookUI
 				{
 					case "1":
 						receiptBook.PrintAllReceipts();
+						ChooseRecipy();
 						break;
 					case "2":
 						AddNewRecipy();
@@ -73,6 +74,27 @@ namespace ReceiptBookUI
 			Console.Write("Instructions: ");
 			string receiptInstructions = Console.ReadLine();
 			receiptBook.AddReceipt(new Receipt(0, receiptName, receiptDescription, receiptInstructions));
+		}
+
+		private void ChooseRecipy()
+		{
+			while(true)
+			{
+				Console.WriteLine("Choose one recipy or type q to go back");
+				string choice = Console.ReadLine();
+				switch (choice)
+				{
+					case "1":
+						Receipt receipt = receiptBook.GetReceipt(1);
+						Console.WriteLine(receipt.ReceiptName);
+						break;
+					case "q":
+						Console.WriteLine("Going back");
+						return;
+					default:
+						break;
+				}
+			}
 		}
 	}
 }

@@ -14,6 +14,7 @@ namespace ReceiptBook
 		public string ReceiptInstruction { get; set; }
 		private List<Ingredient> _ingredients = new List<Ingredient>();
 
+		public Receipt() { }
 		public Receipt(int id, string receiptName, string receiptDescription, string receipInstruction)
 		{
 			ReceiptId = id;

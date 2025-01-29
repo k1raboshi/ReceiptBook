@@ -1,5 +1,9 @@
-﻿using System;
+﻿using Dapper;
+using Microsoft.Extensions.Configuration;
+using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.SQLite;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,45 +12,78 @@ namespace ReceiptBook
 {
 	public class ReceiptBook
 	{
-		private List<Receipt> _receipts;
-
 		public ReceiptBook()
 		{
-			_receipts = new List<Receipt>();
+			
 		}
 
 		public Receipt GetReceipt(int id)
 		{
-			return _receipts.ElementAt(id);
+			using (IDbConnection cnn = new SQLiteConnection(LoadConnectionString()))
+			{
+				var output = cnn.Query<Receipt>("SELECT * FROM Receipt WHERE ReceiptId = @id", new { id });
+				return output.FirstOrDefault();
+			}
 		}
 
-		public List<Receipt> GetReceiptList(int id)
+		public List<Receipt> GetReceiptList()
 		{
-			return _receipts.ToList();
+			using (IDbConnection cnn = new SQLiteConnection(LoadConnectionString()))
+			{
+				var output = cnn.Query<Receipt>("SELECT * FROM Receipt", new DynamicParameters());
+				return output.ToList();
+			}		
 		}
 
 		public void AddReceipt(Receipt receipt)
 		{
-			_receipts.Add(receipt);
+			using (IDbConnection cnn = new SQLiteConnection(LoadConnectionString()))
+			{
+				var sqlQuery = "INSERT INTO Receipt (ReceiptName, ReceiptDescription, ReceiptInstruction)" +
+								"VALUES (@ReceiptName, @ReceiptDescription, @ReceiptInstruction";
+				cnn.Execute(sqlQuery, receipt);
+			}
+
 		}
 
 		public void EditReceipt(int id, Receipt newReceipt)
 		{
-			Receipt receipt = GetReceipt(id);
+			using (IDbConnection cnn = new SQLiteConnection(LoadConnectionString()))
+			{
+				var sqlQuery = "UPDATE Receipt " +
+								"SET ReceiptName = @ReceiptName, ReceiptDescription = @RececeiptDescription, ReceiptInstruction = @ReceiptInstruction";
+				cnn.Execute(sqlQuery, newReceipt);
+			}
+				
 
 		}
 
 		public void DeleteReceipt(int id) 
 		{
-			_receipts.RemoveAt(id);
+			using (IDbConnection cnn = new SQLiteConnection(LoadConnectionString()))
+			{
+				var sqlQuery = "DELETE FROM Receipt WHERE ReceiptId = @id";
+				cnn.Execute(sqlQuery, new {id});
+			}
 		}
 
 		public void PrintAllReceipts()
 		{
-			foreach(Receipt receipt in _receipts)
+			foreach(Receipt receipt in GetReceiptList())
 			{
 				Console.WriteLine($"{receipt.ReceiptName}: {receipt.ReceiptDescription}; {receipt.ReceiptDescription}");
 			}
+		}
+
+		private static string LoadConnectionString()
+		{
+			var builder = new ConfigurationBuilder()
+				.SetBasePath(Directory.GetCurrentDirectory())
+				.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
+
+			IConfiguration config = builder.Build();
+			string conString = config.GetConnectionString("Default");
+			return conString;
 		}
 	}
 }
