@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using Microsoft.Extensions.Configuration;
+using ReceiptBook.DTO;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -12,6 +13,8 @@ namespace ReceiptBook
 {
 	public class ReceiptBook
 	{
+		private int _pageLimit = 10;
+		private int _currentPage = 1;
 		public ReceiptBook()
 		{
 			
@@ -26,6 +29,15 @@ namespace ReceiptBook
 			}
 		}
 
+		public Receipt GetReceipt(string receiptName)
+		{
+			using (IDbConnection cnn = new SQLiteConnection(LoadConnectionString()))
+			{
+				var output = cnn.Query<Receipt>("SELECT * FROM Receipt WHERE ReceiptName = @receiptName", new { receiptName });
+				return output.FirstOrDefault();
+			}
+		}
+
 		public List<Receipt> GetReceiptList()
 		{
 			using (IDbConnection cnn = new SQLiteConnection(LoadConnectionString()))
@@ -35,27 +47,27 @@ namespace ReceiptBook
 			}		
 		}
 
-		public void AddReceipt(Receipt receipt)
+		public void CreateReceipt(CreateReceiptDTO receipt)
 		{
 			using (IDbConnection cnn = new SQLiteConnection(LoadConnectionString()))
 			{
-				var sqlQuery = "INSERT INTO Receipt (ReceiptName, ReceiptDescription, ReceiptInstruction)" +
-								"VALUES (@ReceiptName, @ReceiptDescription, @ReceiptInstruction";
+				var sqlQuery = "INSERT INTO Receipt (ReceiptName, ReceiptDescription, ReceiptInstructions)" +
+								"VALUES (@ReceiptName, @ReceiptDescription, @ReceiptInstructions)";
+				
 				cnn.Execute(sqlQuery, receipt);
 			}
 
 		}
 
-		public void EditReceipt(int id, Receipt newReceipt)
+		public void EditReceipt(Receipt newReceipt)
 		{
 			using (IDbConnection cnn = new SQLiteConnection(LoadConnectionString()))
 			{
 				var sqlQuery = "UPDATE Receipt " +
-								"SET ReceiptName = @ReceiptName, ReceiptDescription = @RececeiptDescription, ReceiptInstruction = @ReceiptInstruction";
+								"SET ReceiptName = @ReceiptName, ReceiptDescription = @ReceiptDescription, ReceiptInstructions = @ReceiptInstructions " +
+								"WHERE ReceiptId = @ReceiptId";
 				cnn.Execute(sqlQuery, newReceipt);
 			}
-				
-
 		}
 
 		public void DeleteReceipt(int id) 
@@ -67,11 +79,28 @@ namespace ReceiptBook
 			}
 		}
 
+		public void DeleteReceipt(string receiptName)
+		{
+			using (IDbConnection cnn = new SQLiteConnection(LoadConnectionString()))
+			{
+				var sqlQuery = "DELETE FROM Receipt WHERE ReceiptName = @id";
+				cnn.Execute(sqlQuery, new { receiptName });
+			}
+		}
+
 		public void PrintAllReceipts()
 		{
-			foreach(Receipt receipt in GetReceiptList())
+			List<Receipt> receipts = GetReceiptList();
+
+			if (receipts.Count == 0)
 			{
-				Console.WriteLine($"{receipt.ReceiptName}: {receipt.ReceiptDescription}; {receipt.ReceiptDescription}");
+				Console.WriteLine("No recepies yet.");
+				return;
+			}
+
+			foreach(Receipt receipt in receipts)
+			{
+				Console.WriteLine($"{receipt.ReceiptName}: {receipt.ReceiptDescription}; {receipt.ReceiptInstructions}");
 			}
 		}
 
