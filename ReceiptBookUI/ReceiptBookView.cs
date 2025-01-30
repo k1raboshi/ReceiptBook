@@ -13,7 +13,7 @@ namespace ReceiptBookUI
 		private ReceiptBookView() { }
 
 		private ReceiptBook.ReceiptBook receiptBook = new ReceiptBook.ReceiptBook();
-
+		private bool keepRunning = true; 
 		private static ReceiptBookView? s_instance;
 
 		public static ReceiptBookView Instance
@@ -31,7 +31,8 @@ namespace ReceiptBookUI
 
 		public void Start()
 		{
-			while (true)
+
+			while (keepRunning)
 			{
 				Console.WriteLine("Hello! Look at your recipies:");
 				receiptBook.PrintAllReceipts();
@@ -47,6 +48,7 @@ namespace ReceiptBookUI
 		public void ChoiceMenu()
 		{
 			string choice = Console.ReadLine();
+			Console.Clear();
 			switch (choice)
 			{
 				case "1":
@@ -60,6 +62,7 @@ namespace ReceiptBookUI
 					break;
 				case "4":
 					Console.WriteLine("Exiting");
+					keepRunning = false;
 					return;
 				default:
 					break;
@@ -75,15 +78,25 @@ namespace ReceiptBookUI
 			//AddIngredients();
 			Console.Write("Instructions: ");
 			string receiptInstructions = Console.ReadLine();
-			//Show info
-			receiptBook.CreateReceipt(new CreateReceiptDTO(receiptName, receiptDescription, receiptInstructions));
+			receiptBook.PrintReceipt(new Receipt() { ReceiptName = receiptName, ReceiptDescription = receiptDescription, ReceiptInstructions = receiptInstructions});
+			Console.WriteLine("Would you like to save changes? Y/N");
+			string answer = Console.ReadLine();
+
+			if (answer.Equals("Y"))
+			{
+				receiptBook.CreateReceipt(new CreateReceiptDTO(receiptName, receiptDescription, receiptInstructions));
+				Console.WriteLine("Receipt was edited successfully.");
+				return;
+			}
+
+			
 		}
 		//Change later
 		private Receipt ChooseRecipy()
 		{
 			while (true)
 			{
-				Console.WriteLine("Choose one recipy or type q to go back");
+				Console.WriteLine("Choose one recipy by its name or type q to go back");
 				string choice = Console.ReadLine();
 				switch (choice)
 				{
@@ -92,28 +105,58 @@ namespace ReceiptBookUI
 						return null;
 					default:
 						return receiptBook.GetReceipt(choice);
-						break;
 				}
 			}
 		}
 		private void EditRecipy()
 		{
 			Receipt receipt = ChooseRecipy();
-			Console.WriteLine("Let's edit recipy.");
-			Console.Write("New recipy name: ");
-			string receiptName = Console.ReadLine();
-			Console.Write("New recipy description: ");
-			string receiptDescription = Console.ReadLine();
+			Console.WriteLine("Let's edit recipy your receipt.");
+			receiptBook.PrintReceipt(receipt);
+			var t = receipt.ReceiptName;
+			ChangeFieldValue(ref t, "name");
+			receipt.ReceiptName = t;
+
+			t = receipt.ReceiptDescription;
+			ChangeFieldValue(ref t, "description");
+			receipt.ReceiptDescription = t;
+
 			//AddIngredients();
-			Console.Write("New instructions: ");
-			string receiptInstructions = Console.ReadLine();
-			receiptBook.EditReceipt(new Receipt() { ReceiptId = receipt.ReceiptId, ReceiptName = receiptName, ReceiptDescription = receiptDescription, ReceiptInstructions = receiptInstructions });
+			t = receipt.ReceiptInstructions;
+			ChangeFieldValue(ref t, "instructions");
+			receipt.ReceiptInstructions = t;
+
+			Console.WriteLine("");
+			receiptBook.PrintReceipt(receipt);
+			Console.WriteLine("Would you like to save changes? Y/N");
+			string answer = Console.ReadLine();
+
+			if (answer.Equals("Y"))
+			{
+				receiptBook.EditReceipt(receipt);
+				Console.WriteLine("Receipt was edited successfully.");
+				return;
+			}
+			
+			Console.WriteLine("All changes rolled back.");
 		}
 
 		private void DeleteRecipy()
 		{
 			Receipt receipt = ChooseRecipy();
 			receiptBook.DeleteReceipt(receipt.ReceiptId);
+		}
+
+		private void ChangeFieldValue(ref string field, string fieldName)
+		{
+			Console.WriteLine($"Would you choose a {fieldName}? Y/N");
+			string answer = Console.ReadLine();
+
+			if (answer.Equals("Y"))
+			{
+				Console.Write("New recipy name: ");
+				field = Console.ReadLine();
+			}
 		}
 	}
 }

@@ -87,8 +87,11 @@ namespace ReceiptBook
 				cnn.Execute(sqlQuery, new { receiptName });
 			}
 		}
-
-		public void PrintAllReceipts()
+		public void PrintReceipt(Receipt receipt)
+		{
+			Console.WriteLine($"{receipt.ReceiptName}: {receipt.ReceiptDescription}; {receipt.ReceiptInstructions}");
+		}
+			public void PrintAllReceipts()
 		{
 			List<Receipt> receipts = GetReceiptList();
 
@@ -100,7 +103,7 @@ namespace ReceiptBook
 
 			foreach(Receipt receipt in receipts)
 			{
-				Console.WriteLine($"{receipt.ReceiptName}: {receipt.ReceiptDescription}; {receipt.ReceiptInstructions}");
+				PrintReceipt(receipt);
 			}
 		}
 
