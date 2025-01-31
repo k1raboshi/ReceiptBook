@@ -4,7 +4,7 @@
 	{
 		static void Main(string[] args)
 		{
-			ReceiptBookView.Instance.Start();
+			RecipeBookView.Instance.Start();
 		}
 	}
 }

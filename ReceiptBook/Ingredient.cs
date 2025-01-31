@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SQLite;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,7 +12,8 @@ namespace ReceiptBook
 	{
 		public int IngredientID {  get; set; }
 		public string IngredientName { get; set; }
-		public List<Receipt> Receipts { get; } = new List<Receipt>();
+		public List<Recipe> Receipes { get; } = new List<Recipe>();
+		public Ingredient() { }
 		public Ingredient(int ingredientID, string ingredientName)
 		{
 			IngredientID = ingredientID;
