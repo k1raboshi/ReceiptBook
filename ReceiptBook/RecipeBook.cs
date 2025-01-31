@@ -21,52 +21,52 @@ namespace ReceiptBook
 			
 		}
 
-		public Recipe GetRecipe(int id)
+		public async Task<Recipe> GetRecipeAsync(int id)
 		{
 			using (IDbConnection cnn = new SQLiteConnection(LoadConnectionString()))
 			{
-				var output = cnn.Query<Recipe>("SELECT * FROM Recipe WHERE RecipeId = @id", new { id });
+				var output = await cnn.QueryAsync<Recipe>("SELECT * FROM Recipe WHERE RecipeId = @id", new { id });
 				return output.FirstOrDefault();
 			}
 		}
 
-		public Recipe GetRecipe(string recipeName)
+		public async Task<Recipe> GetRecipeAsync(string recipeName)
 		{
 			using (IDbConnection cnn = new SQLiteConnection(LoadConnectionString()))
 			{
-				var output = cnn.Query<Recipe>("SELECT * FROM Recipe WHERE RecipeName = @recipeName", new { recipeName });
+				var output = await cnn.QueryAsync<Recipe>("SELECT * FROM Recipe WHERE RecipeName = @recipeName", new { recipeName });
 				return output.FirstOrDefault();
 			}
 		}
 
-		public List<Recipe> GetRecipeList()
+		public async Task<List<Recipe>> GetRecipeListAsync()
 		{
 			using (IDbConnection cnn = new SQLiteConnection(LoadConnectionString()))
 			{
-				var output = cnn.Query<Recipe>("SELECT * FROM Recipe", new DynamicParameters());
+				var output = await cnn.QueryAsync<Recipe>("SELECT * FROM Recipe", new DynamicParameters());
 				return output.ToList();
 			}		
 		}
 
-		public void CreateRecipe(CreateRecipeDTO recipe)
+		public async Task CreateRecipeAsync(CreateRecipeDTO recipe)
 		{
 			using (IDbConnection cnn = new SQLiteConnection(LoadConnectionString()))
 			{
 				var sqlQuery = "INSERT INTO Recipe (RecipeName, RecipeDescription, RecipeInstructions)" +
 								"VALUES (@RecipeName, @RecipeDescription, @RecipeInstructions)";
 				
-				cnn.Execute(sqlQuery, recipe);
+				cnn.ExecuteAsync(sqlQuery, recipe);
 			}
 		}
 
-		public void EditRecipe(Recipe newRecipe)
+		public async Task EditRecipeAsync(Recipe newRecipe)
 		{
 			using (IDbConnection cnn = new SQLiteConnection(LoadConnectionString()))
 			{
 				var sqlQuery = "UPDATE Recipe " +
 								"SET RecipeName = @RecipeName, RecipeDescription = @RecipeDescription, RecipeInstructions = @RecipeInstructions " +
 								"WHERE RecipeId = @RecipeId";
-				cnn.Execute(sqlQuery, newRecipe);
+				await cnn.ExecuteAsync(sqlQuery, newRecipe);
 			}
 		}
 
@@ -91,18 +91,18 @@ namespace ReceiptBook
 		{
 			Console.WriteLine($"Recipe: {printRecipeDTO.RecipeName}");
 		}
-		public void PrintRecipe(Recipe recipe)
+		public async Task PrintRecipe(Recipe recipe)
 		{
 			Console.WriteLine($"Recipe: {recipe.RecipeName}\n Description: {recipe.RecipeDescription}; {recipe.RecipeInstructions}");
-
-			foreach(var ingredient in recipe.GetIngredientList())
+			var ingredients = await recipe.GetIngredientListAsync();
+			foreach (var ingredient in ingredients)
 			{
 				Console.WriteLine($"{ingredient.IngredientName}: {ingredient.Amount} {ingredient.Unit}");
 			}
 		}
-		public void PrintAllRecipes()
+		public async Task PrintAllRecipes()
 		{
-			List<PrintRecipeDTO> recipes = GetRecipeList().Select(r => r.ToPrintRecipeDTO()).ToList();
+			List<PrintRecipeDTO> recipes = (await GetRecipeListAsync()).Select(r => r.ToPrintRecipeDTO()).ToList();
 
 			if (recipes.Count == 0)
 			{
@@ -116,22 +116,22 @@ namespace ReceiptBook
 			}
 		}
 
-		public static void AddIngredient(Ingredient ingredient)
+		public static async Task AddIngredientAsync(Ingredient ingredient)
 		{
 			using (IDbConnection cnn = new SQLiteConnection(LoadConnectionString()))
 			{
 				var sqlQuery = "INSERT INTO Ingredient (IngredientName)" +
 								"VALUES (@IngredientName)";
 
-				cnn.Execute(sqlQuery, ingredient);
+				await cnn.ExecuteAsync(sqlQuery, ingredient);
 			}
 		}
 
-		public static Ingredient GetIngredient(string ingredientName)
+		public static async Task<Ingredient> GetIngredientAsync(string ingredientName)
 		{
 			using (IDbConnection cnn = new SQLiteConnection(LoadConnectionString()))
 			{
-				var output = cnn.Query<Ingredient>("SELECT * FROM Ingredient WHERE IngredientName = @ingredientName", new { ingredientName });
+				var output = await cnn.QueryAsync<Ingredient>("SELECT * FROM Ingredient WHERE IngredientName = @ingredientName", new { ingredientName });
 				return output.FirstOrDefault();
 			}
 		}

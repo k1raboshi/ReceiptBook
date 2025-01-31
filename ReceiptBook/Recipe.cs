@@ -27,48 +27,48 @@ namespace ReceiptBook
 			RecipeInstructions = recipeInstructions;
 		}
 
-		public Ingredient GetIngredient(int id)
+		public async Task<Ingredient> GetIngredientAsync(int id)
 		{
 			using (IDbConnection cnn = new SQLiteConnection(LoadConnectionString()))
 			{
-				var output = cnn.Query<Ingredient>("SELECT * FROM Ingredient WHERE IngredientId = @id", new { id });
+				var output = await cnn.QueryAsync<Ingredient>("SELECT * FROM Ingredient WHERE IngredientId = @id", new { id });
 				return output.FirstOrDefault();
 			}
 		}
 
-		public List<IngredientInfo> GetIngredientList()
+		public async Task<List<IngredientInfo>> GetIngredientListAsync()
 		{
 			using (IDbConnection cnn = new SQLiteConnection(LoadConnectionString()))
 			{
-				var output = cnn.Query<IngredientInfo>("SELECT Ingredient.IngredientName, RI.Amount, RI.Unit " +
-					"FROM RecipeIngredient as RI " +
-					"JOIN Ingredient ON Ingredient.IngredientId = RI.IngredientId " +
+				var output = await cnn.QueryAsync<IngredientInfo>("SELECT I.IngredientName, RI.Amount, RI.Unit " +
+					"FROM RecipeIngredient RI " +
+					"JOIN Ingredient I ON I.IngredientId = RI.IngredientId " +
 					"WHERE RecipeId = @RecipeId", new { RecipeId });
 				return output.ToList();
 			}
 		}
 
-		public void AddIngredient(RecipeIngredient ingredient)
+		public async Task AddIngredientAsync(RecipeIngredient ingredient)
 		{
 			using (IDbConnection cnn = new SQLiteConnection(LoadConnectionString()))
 			{
 				var sqlQuery = "INSERT INTO RecipeIngredient " +
 							"VALUES (@RecipeId, @IngredientId, @Amount, @Unit)";
 
-				cnn.Execute(sqlQuery, ingredient);
+				await cnn.ExecuteAsync(sqlQuery, ingredient);
 			}
 		}
 
-		public void EditIngredient(int id, Ingredient newIngredient)
+		public async Task EditIngredient(int id, Ingredient newIngredient)
 		{
 
-			Ingredient ingredient = GetIngredient(id);
+			Ingredient ingredient = await GetIngredientAsync(id);
 			using (IDbConnection cnn = new SQLiteConnection(LoadConnectionString()))
 			{
 				var sqlQuery = "UPDATE Ingredient " +
 								"SET IngredientName = @IngredientName " +
 								"WHERE IngredientId = @IngredientId";
-				cnn.Execute(sqlQuery, newIngredient);
+				await cnn.ExecuteAsync(sqlQuery, newIngredient);
 			}
 		}
 

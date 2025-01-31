@@ -29,13 +29,13 @@ namespace ReceiptBookUI
 			}
 		}
 
-		public void Start()
+		public async Task Start()
 		{
 
 			while (keepRunning)
 			{
 				Console.WriteLine("Hello! Look at your recipes:");
-				recipeBook.PrintAllRecipes();
+				await recipeBook.PrintAllRecipes();
 				Console.WriteLine("What do you wanna do?");
 				Console.WriteLine("1. Add new recipe");
 				Console.WriteLine("2. Edit recipe");
@@ -68,37 +68,35 @@ namespace ReceiptBookUI
 					break;
 			}
 		}
-		public void AddNewRecipe()
+		public async Task AddNewRecipe()
 		{
 			Console.WriteLine("Let's add new recipe.");
 			Console.Write("Recipe name: ");
 			string recipeName = Console.ReadLine();
 			Console.Write("Description: ");
 			string recipeDescription = Console.ReadLine();
-			List <RecipeIngredient> ingredients = AddIngredients();
+			List <RecipeIngredient> ingredients = await AddIngredients();
 			Console.Write("Instructions: ");
 			string recipeInstructions = Console.ReadLine();
-			recipeBook.PrintRecipe(new Recipe() { RecipeName = recipeName, RecipeDescription = recipeDescription, RecipeInstructions = recipeInstructions });
+			await recipeBook.PrintRecipe(new Recipe() { RecipeName = recipeName, RecipeDescription = recipeDescription, RecipeInstructions = recipeInstructions });
 			Console.WriteLine("Would you like to save changes? Y/N");
 			string answer = Console.ReadLine();
 
 			if (answer.Equals("Y"))
 			{
-				recipeBook.CreateRecipe(new CreateRecipeDTO(recipeName, recipeDescription, recipeInstructions));
+				await recipeBook.CreateRecipeAsync(new CreateRecipeDTO(recipeName, recipeDescription, recipeInstructions));
 				Console.WriteLine("Recipe was edited successfully.");
-				Recipe recipe = recipeBook.GetRecipe(recipeName);
+				Recipe recipe = await recipeBook.GetRecipeAsync(recipeName);
+
 				foreach(var ingredient in ingredients)
 				{
 					ingredient.RecipeId = recipe.RecipeId;
-					recipe.AddIngredient(ingredient);
+					await recipe.AddIngredientAsync(ingredient);
 				}
-				return;
 			}
-
-			
 		}
 		//Change later
-		private Recipe ChooseRecipe()
+		private async Task<Recipe> ChooseRecipe()
 		{
 			while (true)
 			{
@@ -110,15 +108,15 @@ namespace ReceiptBookUI
 						Console.WriteLine("Going back");
 						return null;
 					default:
-						return recipeBook.GetRecipe(choice);
+						return await recipeBook.GetRecipeAsync(choice);
 				}
 			}
 		}
-		private void EditRecipe()
+		private async Task EditRecipe()
 		{
-			Recipe recipe = ChooseRecipe();
+			Recipe recipe = await ChooseRecipe();
 			Console.WriteLine("Let's edit recipy your recipe.");
-			recipeBook.PrintRecipe(recipe);
+			await recipeBook.PrintRecipe(recipe);
 			var t = recipe.RecipeName;
 			ChangeFieldValue(ref t, "name");
 			recipe.RecipeName = t;
@@ -133,13 +131,13 @@ namespace ReceiptBookUI
 			recipe.RecipeInstructions = t;
 
 			Console.WriteLine("");
-			recipeBook.PrintRecipe(recipe);
+			await recipeBook.PrintRecipe(recipe);
 			Console.WriteLine("Would you like to save changes? Y/N");
 			string answer = Console.ReadLine();
 
 			if (answer.Equals("Y"))
 			{
-				recipeBook.EditRecipe(recipe);
+				await recipeBook.EditRecipeAsync(recipe);
 				Console.WriteLine("Recipe was edited successfully.");
 				return;
 			}
@@ -147,9 +145,9 @@ namespace ReceiptBookUI
 			Console.WriteLine("All changes rolled back.");
 		}
 
-		private void DeleteRecipe()
+		private async Task DeleteRecipe()
 		{
-			Recipe recipe = ChooseRecipe();
+			Recipe recipe = await ChooseRecipe();
 			recipeBook.DeleteRecipe(recipe.RecipeId);
 		}
 
@@ -165,7 +163,7 @@ namespace ReceiptBookUI
 			}
 		}
 
-		private List<RecipeIngredient> AddIngredients()
+		private async Task<List<RecipeIngredient>> AddIngredients()
 		{
 			List<Ingredient> ingredients = new List<Ingredient>();
 			List<RecipeIngredient> recipeIngredients = new List<RecipeIngredient>();
@@ -194,12 +192,12 @@ namespace ReceiptBookUI
 					case "1":
 						string ingredientName = Console.ReadLine();
 
-						if (RecipeBook.GetIngredient(ingredientName) == null)
+						if (await RecipeBook.GetIngredientAsync(ingredientName) == null)
 						{
-							RecipeBook.AddIngredient(new Ingredient() { IngredientName = ingredientName });
+							await RecipeBook.AddIngredientAsync(new Ingredient() { IngredientName = ingredientName });
 						}
 
-						int ingredientId = RecipeBook.GetIngredient(ingredientName).IngredientID;
+						int ingredientId = (await RecipeBook.GetIngredientAsync(ingredientName)).IngredientID;
 						int amount = Convert.ToInt32(Console.ReadLine());
 						string unit = Console.ReadLine();
 						ingredients.Add(new Ingredient() { IngredientName = ingredientName });
