@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using ReceiptBook.Repository;
 
 namespace ReceiptBook
 {
@@ -16,7 +17,7 @@ namespace ReceiptBook
 		public string RecipeName { get; set; }
 		public string RecipeDescription { get; set; }
 		public string RecipeInstructions { get; set; }
-		private List<RecipeIngredient> _ingredients = new List<RecipeIngredient>();
+		private readonly RecipeIngredientRepository recipeIngredientRepository = new RecipeIngredientRepository();
 
 		public Recipe() { }
 		public Recipe(int id, string recipeName, string recipeDescription, string recipeInstructions)
@@ -27,69 +28,30 @@ namespace ReceiptBook
 			RecipeInstructions = recipeInstructions;
 		}
 
-		public async Task<Ingredient> GetIngredientAsync(int id)
+		public async Task<IngredientInfo> GetIngredientAsync(int id)
 		{
-			using (IDbConnection cnn = new SQLiteConnection(LoadConnectionString()))
-			{
-				var output = await cnn.QueryAsync<Ingredient>("SELECT * FROM Ingredient WHERE IngredientId = @id", new { id });
-				return output.FirstOrDefault();
-			}
+			return await recipeIngredientRepository.GetIngredientAsync(id, RecipeId);
 		}
 
 		public async Task<List<IngredientInfo>> GetIngredientListAsync()
 		{
-			using (IDbConnection cnn = new SQLiteConnection(LoadConnectionString()))
-			{
-				var output = await cnn.QueryAsync<IngredientInfo>("SELECT I.IngredientName, RI.Amount, RI.Unit " +
-					"FROM RecipeIngredient RI " +
-					"JOIN Ingredient I ON I.IngredientId = RI.IngredientId " +
-					"WHERE RecipeId = @RecipeId", new { RecipeId });
-				return output.ToList();
-			}
+			return await recipeIngredientRepository.GetIngredientListAsync(RecipeId);
 		}
 
 		public async Task AddIngredientAsync(RecipeIngredient ingredient)
 		{
-			using (IDbConnection cnn = new SQLiteConnection(LoadConnectionString()))
-			{
-				var sqlQuery = "INSERT INTO RecipeIngredient " +
-							"VALUES (@RecipeId, @IngredientId, @Amount, @Unit)";
-
-				await cnn.ExecuteAsync(sqlQuery, ingredient);
-			}
+			await recipeIngredientRepository.AddIngredientAsync(ingredient);
 		}
 
-		public async Task EditIngredient(int id, Ingredient newIngredient)
+		public async Task EditIngredient(IngredientInfo newIngredient)
 		{
 
-			Ingredient ingredient = await GetIngredientAsync(id);
-			using (IDbConnection cnn = new SQLiteConnection(LoadConnectionString()))
-			{
-				var sqlQuery = "UPDATE Ingredient " +
-								"SET IngredientName = @IngredientName " +
-								"WHERE IngredientId = @IngredientId";
-				await cnn.ExecuteAsync(sqlQuery, newIngredient);
-			}
+			await recipeIngredientRepository.EditIngredient(newIngredient);
 		}
 
 		public void DeleteIngredient(int id)
 		{
-			using (IDbConnection cnn = new SQLiteConnection(LoadConnectionString()))
-			{
-				var sqlQuery = "DELETE FROM RecipeIngredient WHERE IngredientId = @IngredientId AND RecipeId = @RecipeId";
-				cnn.Execute(sqlQuery, new { IngredientId = id, RecipeId = RecipeId });
-			}
-		}
-
-		private static string LoadConnectionString()
-		{
-			var builder = new ConfigurationBuilder()
-				.SetBasePath(Directory.GetCurrentDirectory())
-				.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-
-			IConfiguration config = builder.Build();
-			string conString = config.GetConnectionString("Default");
-			return conString;
+			recipeIngredientRepository.DeleteIngredient(id, RecipeId);
 		}
 	}
 }
