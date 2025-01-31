@@ -1,6 +1,7 @@
 ﻿using Dapper;
 using Microsoft.Extensions.Configuration;
 using ReceiptBook.DTO;
+using ReceiptBook.Mappers;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -86,6 +87,10 @@ namespace ReceiptBook
 				cnn.Execute(sqlQuery, new { recipeName });
 			}
 		}
+		public void PrintRecipe(PrintRecipeDTO printRecipeDTO)
+		{
+			Console.WriteLine($"Recipe: {printRecipeDTO.RecipeName}");
+		}
 		public void PrintRecipe(Recipe recipe)
 		{
 			Console.WriteLine($"Recipe: {recipe.RecipeName}\n Description: {recipe.RecipeDescription}; {recipe.RecipeInstructions}");
@@ -97,7 +102,7 @@ namespace ReceiptBook
 		}
 		public void PrintAllRecipes()
 		{
-			List<Recipe> recipes = GetRecipeList();
+			List<PrintRecipeDTO> recipes = GetRecipeList().Select(r => r.ToPrintRecipeDTO()).ToList();
 
 			if (recipes.Count == 0)
 			{
@@ -105,7 +110,7 @@ namespace ReceiptBook
 				return;
 			}
 
-			foreach(Recipe recipe in recipes)
+			foreach(PrintRecipeDTO recipe in recipes)
 			{
 				PrintRecipe(recipe);
 			}
